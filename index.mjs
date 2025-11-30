@@ -101,19 +101,25 @@ app.get('/searchByCategory', async (req, res) => {
 
 
 app.get('/searchByLikes', async (req, res) => {
-  let minLikes = req.query.minLikes;
-  let maxLikes = req.query.maxLikes;
+ let minLikes = req.query.minLikes ? Number(req.query.minLikes) : 0;
+ let maxLikes = req.query.maxLikes ? Number(req.query.maxLikes) : 9999;
 
-  let sql = `
-    SELECT quote, firstName, lastName, authorId, likes
-    FROM q_quotes
-    NATURAL JOIN q_authors
-    WHERE likes BETWEEN ? AND ?;
-  `;
+
+let sql = `
+  SELECT quote, firstName, lastName, authorId, likes
+  FROM q_quotes
+  JOIN q_authors USING (authorId)
+  WHERE likes BETWEEN ? AND ?;
+`;
+
   let [rows] = await conn.query(sql, [minLikes, maxLikes]);
+
+  console.log("LIKES ROUTE:", minLikes, maxLikes, "RESULTS:", rows.length);
+    console.log("ROWS RETURNED:", rows);
 
   res.render("results", { quotes: rows });
 });
+
 
 
 app.get("/dbTest", async(req, res) => {
